@@ -28,10 +28,9 @@ exports.getUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await User.findById(req.params.id);
+    Object.assign(user, req.body);
+    await user.save();
     res.json(user);
   } catch (error) {
     res.status(400);

@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
+// -----------------------------
+// Security Question Schema
+// -----------------------------
 const securityQuestionSchema = new mongoose.Schema({
   question: {
     type: String,
@@ -13,6 +17,9 @@ const securityQuestionSchema = new mongoose.Schema({
   },
 });
 
+// -----------------------------
+// User Schema
+// -----------------------------
 const userSchema = new mongoose.Schema(
   {
     userName: {
@@ -42,6 +49,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
+      select: false, // 🔐 never return by default
     },
 
     securityQuestions: {
@@ -52,6 +60,7 @@ const userSchema = new mongoose.Schema(
         },
         message: "Exactly 3 security questions are required",
       },
+      select: false, // 🔐 hide answers
     },
 
     isActive: {
@@ -68,6 +77,44 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const User = mongoose.model("User", userSchema);
+// -----------------------------
+// 🔐 PRE-SAVE MIDDLEWARE
+// -----------------------------
+userSchema.pre("save", async function () {
+  // Hash password if changed
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 
+  // Hash security answers if changed
+  if (this.isModified("securityQuestions")) {
+    for (let q of this.securityQuestions) {
+      // prevent double hashing
+      if (!q.answer.startsWith("$2b$")) {
+        q.answer = await bcrypt.hash(q.answer, 10);
+      }
+    }
+  }
+});
+
+// -----------------------------
+// 🔑 PASSWORD CHECK METHOD
+// -----------------------------
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// -----------------------------
+// 🔐 REMOVE SENSITIVE FIELDS
+// -----------------------------
+userSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    delete ret.password;
+    delete ret.securityQuestions;
+    return ret;
+  },
+});
+
+// -----------------------------
+const User = mongoose.model("User", userSchema);
 module.exports = User;
