@@ -1,7 +1,17 @@
 const User = require("../models/userModel");
 
 exports.getAllUsers = async (req, res) => {
-  const users = await User.find();
+  console.log(req.query);
+
+  let query = User.find();
+
+  if (req.query.sort) {
+    const sortKey = req.query.sort.split(",").join(" ");
+    query = query.sort(sortKey);
+  }
+
+  const users = await query;
+
   res.json(users);
 };
 
