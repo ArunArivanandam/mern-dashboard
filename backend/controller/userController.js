@@ -4,6 +4,7 @@ exports.getAllUsers = async (req, res) => {
   console.log(req.query);
 
   let query = User.find();
+  const count = await User.countDocuments();
 
   if (req.query.sort) {
     const sortKey = req.query.sort.split(",").join(" ");
@@ -16,6 +17,20 @@ exports.getAllUsers = async (req, res) => {
     query = query.select(showFields);
   } else {
     query = query.select("-__v");
+  }
+
+  if (req.query.page && req.query.limit) {
+    const page = req.query.page * 1;
+    const limit = req.query.limit * 1;
+
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+
+    if (count <= skip) {
+      return res.status(200).json({
+        message: "Invalid page number",
+      });
+    }
   }
 
   const users = await query;
