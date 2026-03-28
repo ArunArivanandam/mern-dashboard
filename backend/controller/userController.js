@@ -7,7 +7,15 @@ exports.getAllUsers = async (req, res) => {
 
   if (req.query.sort) {
     const sortKey = req.query.sort.split(",").join(" ");
+    console.log(sortKey);
     query = query.sort(sortKey);
+  }
+
+  if (req.query.fields) {
+    const showFields = req.query.fields.split(",").join(" ");
+    query = query.select(showFields);
+  } else {
+    query = query.select("-__v");
   }
 
   const users = await query;
