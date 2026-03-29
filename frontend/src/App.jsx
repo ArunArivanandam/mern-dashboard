@@ -1,6 +1,12 @@
+import Table from "./components/Table";
+import Users from "./components/Users";
 function App() {
-  const messages = ["hello", "how are you?", "are you well?"];
-  return <h1>{messages[1]}</h1>;
+  return (
+    <>
+      <Table />
+      <Users />
+    </>
+  );
 }
 
 export default App;

@@ -1,8 +1,6 @@
 const User = require("../models/userModel");
 
 exports.getAllUsers = async (req, res) => {
-  console.log(req.query);
-
   let query = User.find();
   const count = await User.countDocuments();
 
