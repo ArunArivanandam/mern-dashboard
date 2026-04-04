@@ -4,12 +4,15 @@ exports.getAllUsers = async (req, res) => {
   let query = User.find();
   const count = await User.countDocuments();
 
+  // 🔃 Sorting
   if (req.query.sort) {
     const sortKey = req.query.sort.split(",").join(" ");
-    console.log(sortKey);
     query = query.sort(sortKey);
+  } else {
+    query = query.sort("-createdAt");
   }
 
+  // 🎯 Field selection
   if (req.query.fields) {
     const showFields = req.query.fields.split(",").join(" ");
     query = query.select(showFields);
@@ -17,6 +20,7 @@ exports.getAllUsers = async (req, res) => {
     query = query.select("-__v");
   }
 
+  // 📄 Pagination
   if (req.query.page && req.query.limit) {
     const page = req.query.page * 1;
     const limit = req.query.limit * 1;
