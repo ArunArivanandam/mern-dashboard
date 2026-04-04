@@ -1,6 +1,7 @@
 const express = require("express");
 
 const app = express();
+app.set("query parser", "extended");
 const cors = require("cors");
 
 const userRouter = require("./routes/userRouter");

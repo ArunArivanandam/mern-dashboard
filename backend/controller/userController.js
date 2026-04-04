@@ -1,8 +1,59 @@
 const User = require("../models/userModel");
 
+// exports.filterSenior = (req, res, next) => {
+//   // 🔥 ensure req.query exists
+//   if (!req.query || typeof req.query !== "object") {
+//     req.query = {};
+//   }
+
+//   // 🔥 ensure age is safe
+//   if (
+//     !req.query.age ||
+//     typeof req.query.age !== "object" ||
+//     req.query.age === null
+//   ) {
+//     req.query.age = {};
+//   }
+
+//   // 🔥 apply filter
+//   if (!req.query.age?.$gt) {
+//     req.query.age.$gt = 60;
+//   }
+
+//   console.log("sen", req.query);
+//   next();
+// };
+
 exports.getAllUsers = async (req, res) => {
-  let query = User.find();
-  const count = await User.countDocuments();
+  // let query = User.find();
+  // const count = await User.countDocuments();
+
+  //Filtering
+  // console.log("arun", req.query);
+  const excludedFields = ["sort", "page", "limit", "fields"];
+  let queryObj = {};
+  for (const field in req.query) {
+    if (excludedFields.includes(field)) continue;
+    if (
+      typeof req.query[field] === "object" &&
+      !Array.isArray(req.query[field])
+    ) {
+      queryObj[field] = {};
+      console.log(queryObj);
+      for (const op in req.query[field]) {
+        queryObj[field][`$${op}`] = Number(req.query[field][op]);
+      }
+    } else {
+      queryObj[field] = req.query[field];
+    }
+    // console.log(queryObj[field]);
+  }
+  // console.log("arun 2", queryObj);
+  let query = User.find(queryObj);
+  const filteredCount = await User.countDocuments(queryObj);
+
+  // res.json(userList);
+  // console.log(req.query);
 
   // 🔃 Sorting
   if (req.query.sort) {
@@ -28,7 +79,7 @@ exports.getAllUsers = async (req, res) => {
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
 
-    if (count <= skip) {
+    if (filteredCount <= skip) {
       return res.status(200).json({
         message: "Invalid page number",
       });
