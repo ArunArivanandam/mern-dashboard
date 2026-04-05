@@ -25,6 +25,7 @@ const User = require("../models/userModel");
 // };
 
 exports.getAllUsers = async (req, res) => {
+  const start = Date.now();
   //Filtering
   const excludedFields = ["sort", "page", "limit", "fields"];
   let queryObj = {};
@@ -77,7 +78,8 @@ exports.getAllUsers = async (req, res) => {
   }
 
   const users = await query;
-
+  const end = Date.now();
+  console.log("controller", end - start);
   res.json({
     total: filteredCount,
     data: users,
@@ -128,5 +130,31 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     res.status(400);
     console.log("Error at deleting a particular user", error.message);
+  }
+};
+
+exports.getUsersAggregation = async (req, res) => {
+  try {
+    const data = await User.aggregate([
+      // {
+      //   $match: { age: { $gt: 60 } },
+      // },
+      {
+        $group: {
+          _id: "$role",
+          min: { $min: "$age" },
+          max: { $max: "$age" },
+          avg: { $avg: "$age" },
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { avg: -1 },
+      },
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.log("Aggregation error", error.message);
   }
 };

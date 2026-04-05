@@ -10,6 +10,8 @@ userRouter
   .get(userController.getAllUsers)
   .post(userController.createUser);
 
+userRouter.route("/aggregation").get(userController.getUsersAggregation);
+
 userRouter
   .route("/:id")
   .get(userController.getUser)

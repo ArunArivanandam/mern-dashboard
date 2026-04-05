@@ -74,7 +74,11 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 // -----------------------------
@@ -97,6 +101,18 @@ userSchema.pre("save", async function () {
   }
 });
 
+userSchema.pre("find", function () {
+  this._startTime = Date.now();
+  this.where({ role: { $ne: "admin" } });
+});
+
+userSchema.post("find", function () {
+  console.log("query time (ms):", Date.now() - this._startTime);
+});
+
+userSchema.virtual("fullName").get(function () {
+  return `${this.userName} ${this.userName}`;
+});
 // -----------------------------
 // 🔑 PASSWORD CHECK METHOD
 // -----------------------------
@@ -108,6 +124,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 // 🔐 REMOVE SENSITIVE FIELDS
 // -----------------------------
 userSchema.set("toJSON", {
+  virtuals: true,
   transform: function (doc, ret) {
     delete ret.password;
     delete ret.securityQuestions;
