@@ -25,11 +25,7 @@ const User = require("../models/userModel");
 // };
 
 exports.getAllUsers = async (req, res) => {
-  // let query = User.find();
-  // const count = await User.countDocuments();
-
   //Filtering
-  // console.log("arun", req.query);
   const excludedFields = ["sort", "page", "limit", "fields"];
   let queryObj = {};
   for (const field in req.query) {
@@ -39,21 +35,15 @@ exports.getAllUsers = async (req, res) => {
       !Array.isArray(req.query[field])
     ) {
       queryObj[field] = {};
-      console.log(queryObj);
       for (const op in req.query[field]) {
         queryObj[field][`$${op}`] = Number(req.query[field][op]);
       }
     } else {
       queryObj[field] = req.query[field];
     }
-    // console.log(queryObj[field]);
   }
-  // console.log("arun 2", queryObj);
   let query = User.find(queryObj);
   const filteredCount = await User.countDocuments(queryObj);
-
-  // res.json(userList);
-  // console.log(req.query);
 
   // 🔃 Sorting
   if (req.query.sort) {
@@ -88,7 +78,10 @@ exports.getAllUsers = async (req, res) => {
 
   const users = await query;
 
-  res.json(users);
+  res.json({
+    total: filteredCount,
+    data: users,
+  });
 };
 
 exports.createUser = async (req, res) => {

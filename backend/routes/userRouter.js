@@ -2,7 +2,7 @@ const express = require("express");
 const userRouter = express.Router();
 const userController = require("../controller/userController");
 
-userRouter.route("/senior");
+// userRouter.route("/senior");
 // .get(userController.filterSenior, userController.getAllUsers);
 
 userRouter
