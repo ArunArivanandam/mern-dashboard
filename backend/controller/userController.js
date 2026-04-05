@@ -1,28 +1,9 @@
 const User = require("../models/userModel");
 
-// exports.filterSenior = (req, res, next) => {
-//   // 🔥 ensure req.query exists
-//   if (!req.query || typeof req.query !== "object") {
-//     req.query = {};
-//   }
-
-//   // 🔥 ensure age is safe
-//   if (
-//     !req.query.age ||
-//     typeof req.query.age !== "object" ||
-//     req.query.age === null
-//   ) {
-//     req.query.age = {};
-//   }
-
-//   // 🔥 apply filter
-//   if (!req.query.age?.$gt) {
-//     req.query.age.$gt = 60;
-//   }
-
-//   console.log("sen", req.query);
-//   next();
-// };
+exports.filterSenior = (req, res, next) => {
+  req.filterOverride = { age: { $gte: 50 } };
+  next();
+};
 
 exports.getAllUsers = async (req, res) => {
   const start = Date.now();
@@ -43,6 +24,11 @@ exports.getAllUsers = async (req, res) => {
       queryObj[field] = req.query[field];
     }
   }
+  // Merge any hard filters set by alias middlewares (e.g. filterSenior)
+  if (req.filterOverride) {
+    Object.assign(queryObj, req.filterOverride);
+  }
+
   let query = User.find(queryObj);
   const filteredCount = await User.countDocuments(queryObj);
 
