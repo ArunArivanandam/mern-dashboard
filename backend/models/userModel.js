@@ -116,8 +116,12 @@ userSchema.virtual("fullName").get(function () {
 // -----------------------------
 // 🔑 PASSWORD CHECK METHOD
 // -----------------------------
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (
+  candidatePassword,
+  hashedPassword,
+) {
+  console.log(candidatePassword, hashedPassword);
+  return await bcrypt.compare(candidatePassword, hashedPassword);
 };
 
 // -----------------------------

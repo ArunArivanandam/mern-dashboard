@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const bcrypt = require("bcrypt");
 
 exports.filterSenior = (req, res, next) => {
   req.filterOverride = { age: { $gte: 50 } };
@@ -116,6 +117,33 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     res.status(400);
     console.log("Error at deleting a particular user", error.message);
+  }
+};
+
+exports.userLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(email);
+    const user = await User.findOne({ email }).select("+password");
+    console.log(user);
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isAuthenticated = await user.comparePassword(
+      `${password}`,
+      user.password,
+    );
+    console.log(isAuthenticated);
+
+    if (!isAuthenticated) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    res.json(isAuthenticated);
+  } catch (error) {
+    res.status(400);
+    console.log("Error at user login", error.message);
   }
 };
 

@@ -6,6 +6,8 @@ userRouter
   .route("/senior")
   .get(userController.filterSenior, userController.getAllUsers);
 
+userRouter.route("/login").post(userController.userLogin);
+
 userRouter
   .route("/")
   .get(userController.getAllUsers)
