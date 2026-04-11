@@ -137,7 +137,7 @@ const productSchema = new mongoose.Schema(
 // -----------------------------
 // 🔒 PRE-SAVE MIDDLEWARE
 // -----------------------------
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   // Auto-generate slug from name if not provided or name changed
   if (this.isModified("name") || !this.slug) {
     this.slug = this.name
@@ -146,7 +146,6 @@ productSchema.pre("save", function (next) {
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-");
   }
-  next();
 });
 
 productSchema.pre("find", function () {

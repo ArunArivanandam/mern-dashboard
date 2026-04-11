@@ -8,6 +8,7 @@ const ALL_FIELDS = [
   { key: "role", label: "Role" },
   { key: "isActive", label: "Status" },
 ];
+
 function getPageNumbers(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages = [1];
