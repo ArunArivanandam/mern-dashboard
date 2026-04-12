@@ -7,6 +7,7 @@ userRouter
   .get(userController.filterSenior, userController.getAllUsers);
 
 userRouter.route("/login").post(userController.userLogin);
+userRouter.route("/logout/:id").post(userController.signOut);
 
 userRouter
   .route("/")
@@ -17,7 +18,7 @@ userRouter.route("/aggregation").get(userController.getUsersAggregation);
 
 userRouter
   .route("/:id")
-  .get(userController.getUser)
+  .get(userController.isAuth, userController.getUser)
   .put(userController.updateUser)
   .delete(userController.deleteUser);
 

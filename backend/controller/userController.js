@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 exports.filterSenior = (req, res, next) => {
   req.filterOverride = { age: { $gte: 50 } };
@@ -86,8 +86,20 @@ exports.createUser = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
+    // console.log(req.headers);
+
+    if (!req.isAdmin && req.userId !== req.params.id) {
+      return res.status(400).send("Not authorized");
+    }
+
     const user = await User.findById(req.params.id);
-    res.json(user);
+    if (req.tokenVersion !== user.tokenVersion) {
+      res
+        .status(400)
+        .send("Already logged Out. Please login again to continue");
+    } else {
+      res.json(user);
+    }
   } catch (error) {
     res.status(400);
     console.log("Error at getting a particular user", error.message);
@@ -100,6 +112,18 @@ exports.updateUser = async (req, res) => {
     Object.assign(user, req.body);
     await user.save();
     res.json(user);
+  } catch (error) {
+    res.status(400);
+    console.log("Error at updating a particular user", error.message);
+  }
+};
+
+exports.signOut = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
+    await user.save();
+    res.json({ message: "Successfully LoggedOut" });
   } catch (error) {
     res.status(400);
     console.log("Error at updating a particular user", error.message);
@@ -123,12 +147,12 @@ exports.deleteUser = async (req, res) => {
 exports.userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email);
+    // console.log(email);
     const user = await User.findOne({ email }).select("+password");
-    console.log(user);
+    // console.log(user);
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     const isAuthenticated = await user.comparePassword(
@@ -140,10 +164,35 @@ exports.userLogin = async (req, res) => {
     if (!isAuthenticated) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    res.json(isAuthenticated);
+    const token = jwt.sign(
+      { id: user._id, role: user.role, tokenVersion: user.tokenVersion }, // payload
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "3m" },
+    );
+
+    console.log(token);
+    // 4. Send token
+    res.json({ token });
   } catch (error) {
     res.status(400);
     console.log("Error at user login", error.message);
+  }
+};
+
+exports.isAuth = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  // console.log(token);
+  if (!token) return res.status(401).send("No token");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    console.log(decoded);
+    req.userId = decoded.id;
+    req.isAdmin = decoded.role === "admin";
+    req.tokenVersion = decoded.tokenVersion;
+    next();
+  } catch (error) {
+    res.status(401).send("Invalid token");
   }
 };
 
