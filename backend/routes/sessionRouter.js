@@ -5,7 +5,9 @@ const sessionController = require("../controller/sessionController");
 sessionRouter
   .route("/")
   .get(sessionController.getAllUsers)
-  .post(sessionController.createUser);
+  .post(sessionController.registerUser);
+
+sessionRouter.route("/login").post(sessionController.loginUser);
 
 sessionRouter
   .route("/:id")

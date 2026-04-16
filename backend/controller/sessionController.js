@@ -12,7 +12,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-exports.createUser = async (req, res) => {
+exports.registerUser = async (req, res) => {
   const { userName, email, password } = req.body;
   try {
     const user = await User.create({ userName, email, password });
@@ -60,23 +60,23 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// // POST /api/auth/login
-// router.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
-//   const user = await User.findOne({ email });
+// POST /api/auth/login
+exports.loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email }).select("+password");
 
-//   if (!user || !(await user.verifyPassword(password))) {
-//     // same message for both cases — no user enumeration
-//     return res.status(401).json({ error: "Invalid credentials" });
-//   }
+  if (!user || !(await user.verifyPassword(password))) {
+    // same message for both cases — no user enumeration
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
 
-//   // Regenerate to prevent session fixation attacks
-//   req.session.regenerate((err) => {
-//     if (err) return res.status(500).json({ error: "Session error" });
-//     req.session.userId = user._id;
-//     res.json({ id: user._id, email: user.email });
-//   });
-// });
+  // Regenerate to prevent session fixation attacks
+  req.session.regenerate((err) => {
+    if (err) return res.status(500).json({ error: "Session error" });
+    req.session.userId = user._id;
+    res.json({ id: user._id, email: user.email });
+  });
+};
 
 // // POST /api/auth/logout
 // router.post("/logout", (req, res) => {
