@@ -78,10 +78,10 @@ exports.loginUser = async (req, res) => {
   });
 };
 
-// // POST /api/auth/logout
-// router.post("/logout", (req, res) => {
-//   req.session.destroy((err) => {
-//     res.clearCookie("connect.sid");
-//     res.json({ ok: true });
-//   });
-// });
+// POST /api/auth/logout
+exports.logoutUser = async (req, res) => {
+  await req.session.destroy((err) => {
+    res.clearCookie("connect.sid");
+    res.json({ ok: true });
+  });
+};

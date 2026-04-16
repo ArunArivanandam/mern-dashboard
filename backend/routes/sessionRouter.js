@@ -8,6 +8,7 @@ sessionRouter
   .post(sessionController.registerUser);
 
 sessionRouter.route("/login").post(sessionController.loginUser);
+sessionRouter.route("/logout").post(sessionController.logoutUser);
 
 sessionRouter
   .route("/:id")
