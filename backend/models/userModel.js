@@ -120,7 +120,7 @@ userSchema.virtual("fullName").get(function () {
 // -----------------------------
 // 🔑 PASSWORD CHECK METHOD
 // -----------------------------
-userSchema.methods.comparePassword = async function (
+userSchema.methods.verifyPassword = async function (
   candidatePassword,
   hashedPassword,
 ) {

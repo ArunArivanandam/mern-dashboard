@@ -143,7 +143,7 @@ exports.userLogin = async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    const isAuthenticated = await user.comparePassword(
+    const isAuthenticated = await user.verifyPassword(
       `${password}`,
       user.password,
     );

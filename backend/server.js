@@ -1,8 +1,7 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const app = require("./app");
 const connectToMongoDB = require("./db/connectToMongoDB");
-const dotenv = require("dotenv");
-
-dotenv.config();
 
 app.listen(3000, () => {
   connectToMongoDB();

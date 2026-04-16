@@ -13,10 +13,11 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+  const { userName, email, password } = req.body;
   try {
-    const user = new User(req.body);
-    const savedUser = await user.save();
-    res.json(savedUser);
+    const user = await User.create({ userName, email, password });
+    req.session.userId = user._id; // start session immediately on signup
+    res.status(201).json({ id: user._id, email: user.email });
   } catch (error) {
     res.status(400);
     console.log("Error at creating session user", error.message);
@@ -58,3 +59,29 @@ exports.deleteUser = async (req, res) => {
     console.log("Error at deleting a particular session user", error.message);
   }
 };
+
+// // POST /api/auth/login
+// router.post("/login", async (req, res) => {
+//   const { email, password } = req.body;
+//   const user = await User.findOne({ email });
+
+//   if (!user || !(await user.verifyPassword(password))) {
+//     // same message for both cases — no user enumeration
+//     return res.status(401).json({ error: "Invalid credentials" });
+//   }
+
+//   // Regenerate to prevent session fixation attacks
+//   req.session.regenerate((err) => {
+//     if (err) return res.status(500).json({ error: "Session error" });
+//     req.session.userId = user._id;
+//     res.json({ id: user._id, email: user.email });
+//   });
+// });
+
+// // POST /api/auth/logout
+// router.post("/logout", (req, res) => {
+//   req.session.destroy((err) => {
+//     res.clearCookie("connect.sid");
+//     res.json({ ok: true });
+//   });
+// });

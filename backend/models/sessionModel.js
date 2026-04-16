@@ -43,8 +43,9 @@ sessionUserSchema.pre("save", async function () {
   }
 });
 
-sessionUserSchema.methods.comparePassword = async function (candidatePassword) {
+sessionUserSchema.methods.verifyPassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
 const User = mongoose.model("SessionUser", sessionUserSchema);
 module.exports = User;
