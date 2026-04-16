@@ -85,3 +85,8 @@ exports.logoutUser = async (req, res) => {
     res.json({ ok: true });
   });
 };
+
+exports.getProfile = async (req, res) => {
+  const user = await User.findById(req.session.userId);
+  res.json(user);
+};

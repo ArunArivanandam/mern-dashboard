@@ -1,6 +1,7 @@
 const express = require("express");
 const sessionRouter = express.Router();
 const sessionController = require("../controller/sessionController");
+const requireSessionAuth = require("../middleware/requireSessionAuth");
 
 sessionRouter
   .route("/")
@@ -9,6 +10,9 @@ sessionRouter
 
 sessionRouter.route("/login").post(sessionController.loginUser);
 sessionRouter.route("/logout").post(sessionController.logoutUser);
+sessionRouter
+  .route("/profile")
+  .get(requireSessionAuth, sessionController.getProfile);
 
 sessionRouter
   .route("/:id")
