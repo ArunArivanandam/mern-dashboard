@@ -118,18 +118,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-exports.signOut = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
-    await user.save();
-    res.json({ message: "Successfully LoggedOut" });
-  } catch (error) {
-    res.status(400);
-    console.log("Error at updating a particular user", error.message);
-  }
-};
-
 exports.deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -176,6 +164,18 @@ exports.userLogin = async (req, res) => {
   } catch (error) {
     res.status(400);
     console.log("Error at user login", error.message);
+  }
+};
+
+exports.signOut = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
+    await user.save();
+    res.json({ message: "Successfully LoggedOut" });
+  } catch (error) {
+    res.status(400);
+    console.log("Error at updating a particular user", error.message);
   }
 };
 
