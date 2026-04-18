@@ -14,6 +14,9 @@ userRouter
   .get(userController.getAllUsers)
   .post(userController.createUser);
 
+userRouter.route("/forgotPassword").post(userController.forgotPassword);
+userRouter.route("/resetPassword/:token").post(userController.resetPassword);
+
 userRouter.route("/aggregation").get(userController.getUsersAggregation);
 
 userRouter

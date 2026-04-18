@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 exports.filterSenior = (req, res, next) => {
   req.filterOverride = { age: { $gte: 50 } };
@@ -137,7 +138,7 @@ exports.userLogin = async (req, res) => {
     const { email, password } = req.body;
     // console.log(email);
     const user = await User.findOne({ email }).select("+password");
-    // console.log(user);
+    console.log(user);
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -194,6 +195,64 @@ exports.isAuth = async (req, res, next) => {
   } catch (error) {
     res.status(401).send("Invalid token");
   }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({ message: "User not available" });
+  }
+
+  console.log("user", user);
+  // Step 1: Generate token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  console.log("resetToken", resetToken);
+  // Step 2: Hash token
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  console.log("hashedToken", hashedToken);
+
+  // Step 3: Store hashed token
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpire = Date.now() + 5 * 60 * 1000;
+
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `https://localhost:3000/users/resetPassword/${resetToken}`;
+
+  console.log("Reset URL:", resetUrl);
+
+  res.json({ message: "If email exists, reset link sent", resetUrl });
+};
+
+exports.resetPassword = async (req, res) => {
+  const { newPassword } = req.body;
+  const token = req.params.token;
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res.json({ message: " Password reset successful" });
 };
 
 exports.getUsersAggregation = async (req, res) => {
